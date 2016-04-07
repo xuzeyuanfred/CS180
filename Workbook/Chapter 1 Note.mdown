@@ -1,0 +1,146 @@
+#Algorithm Design Chapter one Note
+
+Problem: Stable Maching 
+Chaos in hiring and accepting applications for a job position 
+
+###Formulating the Problem
+
+special case: each of n applicants applies to each of n companies,
+and each company wants to accept a single applicant. 
+
+This problem can be analogous to pairing a man with a woman, with a matching between n men and n women 
+
+M = {m1,..,mn} of n men 
+W = {w1,..,wn} of n women 
+MxW is the set of all possible ordered pairs of the form (m,w)
+where m ∈ M  and w ∈ W 
+
+***A matching*** is a set of ordered pairs, each from M x W, with the property that each member of M and each member of W appears in at most one pair in S.
+
+***A perfect matching*** S' is a matching with the property that each member of M and each member of W appears in exactly one pair in S'
+(in this case, we have a perfect monogamy between men and women)
+
+Introducing **Preference**:
+Each man ranks all the women; the order of ranking of m is his perference list.
+
+**unstable matching*** example: if (m,n) amd (m',n') are two pairs, but m prefers n' and n' prefers m, then this matching is unstable.
+
+The Goal is to establish a set of pair wihtout instabilities 
+
+**Def** 
+A matching S is stable if (i) it is perfect
+						  (ii) there is no instability with respect to S 
+
+Two Questions:
+1. Does there exist a stable matching for every set of preference lists?
+2. Given a set of preference lists, can we efficiently construct a stable matching if there is one?
+
+
+###Designing the Algorithm
+An algorithm that takes the preference list and constructs a stable matching 
+
+*Gale-Shapley Algorithm*
+
+```Algorithm
+Initially all m ∈ M and w ∈ W are free
+While there is a man m who is free and hasn't propsed to every woman
+	Choose such a man m
+	Let w be the highest-ranked woman in m's preference list 
+		to whom m has not yet proposed 
+	If w is free then 
+		(m,w) become engaged
+	Else w is currently engaged to m' 
+		if w prefers m' to m then
+			m remains free
+		Else w prefers m to m'
+			(m,w) become engaged 
+			 m' becomes free
+		Endif 
+	Endif
+EndWhile 
+Return the set S of engaged pairs 
+```
+
+###Algorithm Analysis 
+Question: does this algorithm work? Will it return a stable matching?
+
+(1.1) w remains engaged from the point at which she receives her first proposal; and the sequence of partners to which she is engaged gets better and better (in terms of her preference list)
+
+(aside) m remains free until he proposes to the highest-ranked woman on his list; at this point he may or may not become engaged.
+
+(1.2) The sequence of women to whom m proposes gets worse and worse (in terms of his preference list)
+
+Now we analyze the number of iterations needed for termination
+
+```
+(1.3) The G-S algorithm terminates after at most n^2 iterations of while loop
+```
+**Proof**: Let P(t) denotes the set of pairs (m,w) such that m has propsed to w by the end of iteration t, we see that for all t, the size of P(t+1) is strictly greater than the set of P(t).
+There are only n^2 possible pairs of men and women in total, so the value of P(.) can increase at most n^2 times over the course of the algorithm.
+Thus there are at most n^2 iterations 
+
+
+Need to Show
+(1.4) if m is free at some point in the execution of the algorithm, then there is a woman to whom he has not yet propsed 
+
+**Proof**: Suppose there is a point when m is free but has already propsed to every woman. Then by (1,1) each of n women is engaged at hte point, so all men are engaged as well, which is a contradiction.
+
+(1.5) The set S returned at termination is a perfect matching. 
+Similar proof to previous one. There is no free man in the end 
+
+```
+(1.6) G-S algorithm returns a set of pairs S, the set S is a stable matching
+```
+**Proof**: Prove by contradiction
+Assume that there is instability in the matching, that is, in the set S, there exists two pairs 
+(m,w) and (m', w'), such that:
+	m prefers w' to w
+	w' prefers m to m'
+In the execution of the algorithm, m's last proposol should be w (as defined by S)
+In this case, has m proposed to w' before?
+	If m has proposed to w' before, and being rejected, then w' must has picked a man that has higher rank than m
+		But w' chose m', which is contradictory to our assumption.
+	If m has not proposed to w' before, then one m's preference list, w' must have a lower preference to w, 
+		But w' has a higher preference to w, so we have another contradiction 
+Either way we reach contradiction, so assumption is false, and S is stable matching set.
+
+
+##Extension
+
+**Existence of Multiple Stable Matching**
+preference list is:
+	m prefers w to w'
+	m' prefers w' to w
+	w prefers m' to m
+	w' prefers m to m'
+
+G-S algorithm will only give one of the stable matchings, and therefore the algorithm has certain "unfairness"
+Since women and men have different preference list, it matters about who propses. 
+case(1): all men's preference list don't clash, so they just instantly get what they want
+case(2): all women's preference list completely clash with men's, then women can only get their least prefered man
+(women are unhappy if man propses; man are unahppy if woman propses)
+
+
+**Claim**: ALL G-S algorithm execution gives the same matching set S
+
+
+Def:
+	A woman w is a valid partner for m if there is a stable matching (m,w)
+	A woman w is a best valid partner of m if w is a valid partner, and no women that m ranks higher than w is valid for m, denote best valid partner of m as best(m)
+Let S denotes the set {(m,best(m)) : m ∈ M}
+
+```
+(1.7) Every execution of G-S Algorithm gives the set S, which gives men their best valid partner 
+```
+
+**Proof**: 
+
+
+
+```
+(1.8) in the G-S Algorithm, women will get their worst valid partner 
+```
+**Proof**
+
+
+
