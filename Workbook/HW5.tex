@@ -1,0 +1,245 @@
+%=======================02-713 LaTeX template, following the 15-210 template==================
+%
+% You don't need to use LaTeX or this template, but you must turn your homework in as
+% a typeset PDF somehow.
+%
+% How to use:
+%    1. Update your information in section "A" below
+%    2. Write your answers in section "B" below. Precede answers for all 
+%       parts of a question with the command "\question{n}{desc}" where n is
+%       the question number and "desc" is a short, one-line description of 
+%       the problem. There is no need to restate the problem.
+%    3. If a question has multiple parts, precede the answer to part x with the
+%       command "\part{x}".
+%    4. If a problem asks you to design an algorithm, use the commands
+%       \algorithm, \correctness, \runtime to precede your discussion of the 
+%       description of the algorithm, its correctness, and its running time, respectively.
+%    5. You can include graphics by using the command \includegraphics{FILENAME}
+%
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[noend]{algpseudocode}
+\usepackage{graphicx}
+\usepackage[margin=1in]{geometry}
+\usepackage{mathtools}
+\usepackage{fancyhdr}
+\usepackage{algorithmicx}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt plus 1pt}
+\setlength{\headheight}{13.6pt}
+\newcommand\question[2]{\vspace{.25in}\hrule\textbf{#1: #2}\vspace{.5em}\hrule\vspace{.10in}}
+\renewcommand\part[1]{\vspace{.10in}\textbf{(#1)}}
+\newcommand\analysis{\vspace{.10in}\textbf{Analysis: }}
+\newcommand\algorithm{\vspace{.10in}\textbf{Algorithm: }}
+\newcommand\correctness{\vspace{.10in}\textbf{Correctness: }}
+\newcommand\runtime{\vspace{.10in}\textbf{Running time: }}
+\pagestyle{fancyplain}
+\lhead{\textbf{\NAME\ (\ANDREWID)}}
+\chead{\textbf{CS180 HW\HWNUM}}
+\rhead{02-713, \today}
+\begin{document}\raggedright
+%Section A==============Change the values below to match your information==================
+\newcommand\NAME{Zeyuan Xu}  % your name
+\newcommand\ANDREWID{004255573}     % your andrew id
+\newcommand\HWNUM{5}              % the homework number
+%Section B==============Put your answers to the questions below here=======================
+
+% no need to restate the problem --- the graders know which problem is which,
+% but replacing "The First Problem" with a short phrase will help you remember
+% which problem this is when you read over your homeworks to study.
+
+\question{1}{Printing Paragraph} 
+
+\analysis:
+Let
+\begin{math}
+s(i,j) = M - j + i - \displaystyle\sum_{k=i}^{j} l_k
+\end{math}
+
+be the number of extra spaces required to put words from i to j on the same line. 
+When s(i,j) is greater or equal to 0, we can fit words into the line. Otherwise, we cannot do that.
+Therefore, we can summurize the cost c(i,j) as:
+
+\begin{math} 
+c(i,j)=
+\begin{cases}
+\infty, & \text{if}\ s(i,j) < $0$ \\
+0, & \text{if}\ s{i,j} \geq $0$ and j = n \\
+s(i,j)^3, & \text{otherwise} 
+\end{cases}
+\end{math}
+
+The dynamic programming method:
+Let C(j) be the optimal method for printing n words from word 1 to word j,  Then we have \newline
+\begin{math}
+C(0) = 0  \newline
+C(j) = \min_{j \geq i \geq 0} C(i)+ C(i,j)    \hspace{5mm} for  \hspace{5mm} j > 0 
+\end{math}\newline 
+for our algorithm, the input is an integer array l[ ], with  slot i representing the length of word i
+M is the maximum length per line, and n is the size of our input array.
+
+\runtime:
+The complexity of the algorithm is $O(n^2)$
+The space requirement for the algorithm is about $O(n)$ complexity 
+
+\algorithm:
+\begin{algorithmic}
+\State $EX[n+1][n+1]$ \algorithmiccomment{number of extra spaces on a single line for word i to j}
+\State $LC[n+1][n+1]$ \algorithmiccomment{the cost for a single line}
+\State $C[n+1]$ \algorithmiccomment{the total cost of our optimal solution for word from 1 to j}
+\State $p[n+1]$ \algorithmiccomment{used to print the optimal solution}
+\State $i$ and $j$
+
+\algorithmiccomment{calculate the extra space for each word when they are put into a single line}
+\For{\texttt{i from $1$ to $n$}}
+     \State \texttt{$EX[i][i]$ = $M$ - $l[i-1]$}
+     \For{\texttt{$j$ from $i+1$ to $n$}}
+	\State \texttt{$EX[i][j]$ = $EX[i][j-1]$ - $l[j-1]$ - $1$} 
+     \EndFor
+\EndFor
+
+\algorithmiccomment{calculate the corresponding line costs}
+\For{\texttt{$i$ from $1$ to $n$}}
+	\For{\texttt{$j$ from $1$ to $n$}}
+		\If{$EX[i][j]$ < $0$}
+			\State \texttt{$LC[i][j]$ = infinity}
+		\ElsIf{ j = n and  EX[i][j] greater or equal to 0}
+			\State \texttt{$LC[i][j]$ = $0$}
+		\Else
+			\State \texttt{$LC[i][j]$ = $EX^3[i][j] $}
+		\EndIf
+	\EndFor
+\EndFor
+
+\algorithmiccomment{calculate minimum cost}
+\State \texttt{$C[0]$ = $0$}
+\For{\texttt{$j$ from $1$ to $n$}}
+	\State \texttt {$C[j]$ = infinity}
+	\For{\texttt{$i$ from $1$ to $j$}}
+		\If{\texttt{C[i-1] != infinity and LC[i][j] != infinity and C[i][j] + LC[i][j] < C[j]}}
+			\State \texttt{$C[j]$ = $C[i-1]$ + $LC[i-1]$}
+			\State \texttt{$P[j]$ = $i$}
+		\EndIf
+	\EndFor
+\EndFor
+\end{algorithmic}
+
+
+\question{2}{Palindrome subsequence}
+
+\analysis: 
+approach the problem using bottom-up approach, by beginning with subsequences with length 1 all the way up to the string with length equal to the input string length. If the input string has length n, The data structure used is a n by n matrix. 
+
+Suppose that the input is a string s with length n 
+
+\runtime:
+The Time complexity of the algorithm is $O(n^2)$
+
+
+\algorithm:
+\begin{algorithmic}
+\State $chars[n] \gets $s \algorithmiccomment{convert the input string to a char array}
+\State $R\gets $R[n][n] \algorithmiccomment {Initialize a new n by n matrix}
+\If {$n = 0$}
+    \State \textbf{return} $0$ \algorithmiccomment {empty string}
+\Else
+      \For{\texttt{i from $1$ to $n$}}
+        \State \texttt{R[i][i] = $1$}     \algorithmiccomment{add characters to the matrix column}
+      \EndFor
+      \For{\texttt{sublen from $2$ to $n$}}
+	\For{\texttt{i from $0$ to $n$-$sublen$}}
+      	 \State \texttt{$j$ = $i$ + $sublen$ - $1$}
+	 \If{ chars[i] = chars[j] and $sublen$ = $2$ }
+	 	\State \texttt{R[i][j] = 2}
+	 \ElsIf{chars[i] = chars[j]}
+		\State \texttt{R[i][j] = R[i+1][j-1] + $2$}
+	 \Else
+		\State \texttt{R[i][j] = max(R[i+1][j] and LP[i][j-1])}
+	 \EndIf
+	\EndFor      
+      \EndFor
+\State \texttt{return R[0][n-1]}
+\EndIf
+\end{algorithmic}
+
+\question{3}{Minimum Cost of Cutting a String}
+
+\analysis:
+the input of the problem is a stirng s with length n, and a set of m indices to break the string according to the indexes 
+we need a best ordering of the breaks to minimize the cost of cutting the string 
+pick index i and j,  where i is less than j, and i, j are between 0 and n 
+denote the minimum cost for cutting the substring from index i to j as C(i,j)
+Recurrence: C(i,j) = mininum of  (length of substring + C(i,k) + C(k,j) where k is between i and j)
+Build a n by n table and find the minimum cost of each slot (i,j) where i and j are between 0 and n 
+
+\runtime:
+building up the table takes $O(n^2)$
+at most we need to look up n items and compare, which gives $O(n)$
+total cost is about $O(n^3)$
+
+\algorithm:
+\begin{algorithmic}
+\State $C[n][n]$ \algorithmiccomment{the cost table that stores cost for substring(i,j)}
+
+\end{algorithmic}
+
+
+\question{4}{Schedule to minimize the lateness}
+Part(a) : Suppose that we have an optional solution J, and suppose we have an inversion in the optimal solution:
+if job i is scheduled before job j but \begin{math} d_i > d_j \end{math}, in this case, the finish time will still be before \begin{math}d_i \end{math}
+and the swapping will not change finish time for other jobs, this is still optimal after the swapping.
+
+Any permutation of the optimal solution is a combination of swappings in the optimal soliution. Since swapping doesn't change 
+optimality, we can have an optimal solution where the dealines are in increasing order. 
+
+Part(b): 
+Suppose that $d_1\le d_2\le...\le d_n=D$, 
+since in part (a), we have proven that there is an optimal solution in increasing order. 
+so we recognize subproblems as $OPT(i,j)$, which means the maximal number of schedulable jobs among $1, 2, ..., i$ under the constraint that all the chosen job must finish by time $j$. Then $OPT(i,j)$ is achieved either by including job $i$ in the schedule (at the end) or not, i.e.,
+\begin{align}
+OPT(i,j) = \max{\{OPT(i-1,j-t_i)+1, OPT(i-1,j)\}}
+\end{align}
+where $i\ge 1$ and $j\ge 0$, and if $j < t_i$, job $i$ cannot be involved in the schedule, so $OPT(i,j) = OPT(i-1,j)$ in this case. And the base case is
+\begin{align}
+OPT[0][j] = 0 \textrm{ for } j=0, 1, ..., D
+\end{align}
+Apply dynamic programming, we use a 2D array \texttt{OPT[0..n][0..D]} to store the values of $OPT(i,j)$
+In the end, $OPT[n][D]$ will be our final solution.
+
+\algorithm:
+\begin{algorithmic}
+\State $OPT[n][D]$
+\For{\texttt{i from 0 to D}}
+	\State \texttt{OPT[0][j] = 0}
+\EndFor
+\For{\texttt{i from 1 to n}}
+	\For{\texttt{j from 1 to D}}
+		\If{\texttt{$t_i$< $j$}}
+			\State \texttt{$OPT[i][j]$ = $OPT[i-1][j]$}
+		\Else 
+			\State \texttt{ max(OPT[i-1][j-\begin{math}t_i\end{math}] and OPT[i-1][j])}
+		\EndIf
+	\EndFor
+\EndFor
+\end{algorithmic}
+
+\runtime:
+after we have constructed the table, we need backtracking to find the value  $OPT[n][D]$,if $OPT[i][j]$ = $OPT[i-1][j]$,  job $i$ is not included in the schedule,
+if OPT[i][j] = OPT[i-1][j-\begin{math}t_i\end{math}]+$1$, job $i$ is included in the schedule. Do this backward tracing until we reach$OPT[0][0]$ 
+sorting the elements takes $O(n\log n)$, filling table takes constant time $O(D)$. backtracking takes $O(n)$
+thus we need $O(nD)$
+
+
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
